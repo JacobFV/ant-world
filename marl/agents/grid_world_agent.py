@@ -101,10 +101,10 @@ class Grid_World_Agent(Agent, Moving_Object, Signalling_Object):
 
     @property
     def observation_space(self):
-        return (4+0,)
+        return (4+0,) #TODO
     @property
     def action_space(self):
-        return (4,)
+        return (4,) #TODO
 
     def die(self, env):
         """in the apply_action method
