@@ -1,3 +1,5 @@
+from .moving_agnet import Moving_Agent
+
 class Zoo:
 
     def __init__(self, algorithm):
@@ -27,16 +29,16 @@ class Zoo:
         """
         pass
 
-    def caterpillar(self):
-        """caterpillar agent initializer
-
-        return: returns caterpillar
-        """
-        pass
-
-    def butterfly(self):
-        """butterfly agent initializer
-
-        return: returns butterfly
-        """
-        pass
+    #def caterpillar(self):
+    #    """caterpillar agent initializer
+    #
+    #    return: returns caterpillar
+    #    """
+    #    pass
+    #
+    #def butterfly(self):
+    #    """butterfly agent initializer
+    #
+    #    return: returns butterfly
+    #    """
+    #    pass
