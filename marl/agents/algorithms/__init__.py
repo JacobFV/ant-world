@@ -5,17 +5,25 @@ class Base_RL_Algorithm:
         
     def act(self, obs): pass
 
-    def train(self, episode):
-        """episode: list of (obs, a, r, done, info)
-        tuples. The final tuple may have `None` for
-        its action and possibly reward"""
+    def train(self, episode, just_one_frame=None):
+        """train agent on `episode`
+        
+        episode: list of (obs, a, r, done, info)
+            tuples. The final tuple may have `None` for
+            its action and possibly reward
+        just_one_frame: None if you want to optimzie
+            the entire trajectory or an integer to
+            identify the frame. If a frame is specified
+            instead of None, the loss is returned. If
+            `just_one_frame=None`, optimization happens
+            inside this method and nothing is returned"""
         pass
 
     def save(self, path): pass
     def restore(self, path): pass
 
 class Base_Actor_Critic_Algorithm(Base_RL_Algorithm):
-    def __init__(**kwargs):
+    def __init__(self, **kwargs):
         super(Base_Actor_Critic_Algorithm, self).__init__(**kwargs)
 
     def q_fn(self, obs, a): pass

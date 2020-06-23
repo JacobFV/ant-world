@@ -86,7 +86,7 @@ class Model_Based_Algorithm(Base_Actor_Critic_Algorithm):
             imag_obs.append(self.pred(imag_obs[-1], imag_a[-1]))
             imag_a.append(self.act(imag_obs[-1])) #the last imag_a computation is superfluous
         return [{"obs": i_o, "a": i_a}
-                for i_o, i_a in zip(imag_obs, imag_act)]]
+                for i_o, i_a in zip(imag_obs, imag_act)]
 
     def q_fn(self, obs=None, a=None, T=10, rollout=None):
         """computes Q-value of (obs,a) for T steps.
@@ -104,17 +104,34 @@ class Model_Based_Algorithm(Base_Actor_Critic_Algorithm):
                 self.estimate_reward(step["obs"], step["a"])
         return discounted_sum
 
-    def train(self, data):
-        """data: list of (obs, a, r, done, info) tuples"""
+    def train(self, episode, just_one_frame=None):
+        """train agent on `episode`
+        
+        episode: list of (obs, a, r, done, info)
+            tuples. The final tuple may have `None` for
+            its action and possibly reward
+        just_one_frame: None if you want to optimzie
+            the entire trajectory or an integer to
+            identify the frame. If a frame is specified
+            instead of None, the loss is returned. If
+            `just_one_frame=None`, optimization happens
+            inside this method and nothing is returned"""
+
         c_recon = 0.2 #reconstructive accuracy importance
         c_pred_roll = 1.0 #predictive rollout accuracy importance
         c_r = 0.5 #reward function accuarcy importance
         c_q_fn = 1.0 #Q function accuracy importance
 
         pred_loss = []
-        policy_loss = []
-        for t in range(len(data)):
-            obs, a, r, done, info = data[t]
+        pol_loss = []
+
+        t_seq = []
+        if just_one_frame is None:
+            t_seq = range(len(episode))
+        else:
+            t_seq = [just_one_frame]
+        for t in t_seq:
+            obs, a, r, _, _ = episode[t]
             rollout_len = 10
             rollout = self._imag_rollout(obs, a, T=rollout_len)
 
@@ -127,6 +144,7 @@ class Model_Based_Algorithm(Base_Actor_Critic_Algorithm):
                         tf.expand_dims(obs, 0)
                     )), axis=0)
             )
+
             #minimize predictive trajectory deviation
             @tf.function
             def frechet_dist(true_seq, pred_seq):
@@ -143,24 +161,50 @@ class Model_Based_Algorithm(Base_Actor_Critic_Algorithm):
                 return tf.reduce_sum(tf.nn.softmax(
                     beta*distances), axis=-1)
             pred_loss += c_pred_roll * frechet_dist(
-                true_seq = [obs for obs, _, _, _, _ in data[t:]],
+                true_seq = [obs
+                    for obs, _, _, _, _
+                    in episode[t:]],
                 pred_seq = [step["obs"] for step in rollout]
             )
+
             #maximize reward estimation accuracy
             pred_loss += c_r * tf.keras.losses.mse(
                 y_true=r,
                 y_pred=self.estimate_reward(obs, a)
             )
+            
             #maximize reward estimation accuracy
-            rollout_to_end = rollout[t:]
-            if len(rollout_to_end) > rollout_len:
-                rollout_to_end = rollout_to_end[:rollout_len]
+            # only looking to compare imagined seuence
+            # elements against real data
+            rollout_to_end = rollout[:]
+            if t+len(rollout_to_end) > len(episode):
+                rollout_to_end = rollout_to_end \
+                    [:t+len(rollout_to_end)-len(episode)]
             pred_loss += c_q_fn * tf.keras.losses.mse(
-                y_true=sum([r for _, _, r, _, _ in data[t:]]),
+                y_true=sum([r
+                            for _, _, r, _, _
+                            in episode[t:]]),
                 y_pred=self.q_fn(rollout=rollout_to_end)
             )
+
             # maximize Q-function over policy space
-            policy_loss = [self.q_fn(rollout=rollout)]
-        #TODO OPTIMIZE WITH RESPECT TO BELOW:
-        #TODO min `sum(pred_loss)` on {pred, encoder, decoder}.trainable_vars
-        #TODO min `sum(policy_loss)` on policy.trainable_vars
+            pol_loss = [-self.q_fn(rollout=rollout)]
+
+        if just_one_frame is None:
+            #optimzie trainable variables with respect to losses
+            pred_min_op = tf.optimizers.Adadelta(learning_rate=0.001) \
+                .minimize(loss=sum(pred_loss), var_list=[
+                    self.predictor.trainable_variables,
+                    self.state_encoder.trainable_variables,
+                    self.state_decoder.trainable_variables,
+                    self.reward_estimator.trainable_variables])
+            pol_min_op = tf.optimizers.Adadelta(0.001) \
+                .minimize(loss=sum(pol_loss),
+                    var_list=self.policy.trainable_variables)
+            for t in range(100):
+                pred_min_op.run()
+                pol_min_op.run()
+            return
+        else:
+            return {"pred_loss": pred_loss,
+                    "pol_loss": pol_loss}
