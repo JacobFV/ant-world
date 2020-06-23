@@ -9,6 +9,17 @@ class Moving_Object:
     def try_move(self, delta_loc, env):
         raise NotImplementedError() #TODO
 
+class Signalling_Object:
+    def __init__(self, signal_depth=3):
+        self.signal = np.zeros((signal_depth,))
+    
+    @property
+    def signal(self):
+        return self.signal
+
+    def _set_signal(self, signal):
+        self.signal = signal
+
 class Grid_World(MA_Gym_Env):
 
     metadata = {'render.modes': ["rgb"]}

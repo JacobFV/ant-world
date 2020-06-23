@@ -33,21 +33,24 @@ class MA_Gym_Env(gym.Env):
             action_n: vectorized actions for agents
         returns: tuple of vectorized agent data
                 (obs_n, r_n, done_n, info_n)"""
+        # since agents may die and be added to self.agents
+        # mid step, a frozen copy is used for this step
+        origonal_agents = self.agents.copy()
         for agent, a in a_n.items():
             agent.apply_action(a, self)
         self._global_update(a_n)
         return {
             agent: agent.egocentric_obs(self)
-            for agent in self.agents
+            for agent in origonal_agents
         }, {
             agent: agent.egocentric_r(self)
-            for agent in self.agents
+            for agent in origonal_agents
         }, {
             agent: agent.egocentric_done(self)
-            for agent in self.agents
+            for agent in origonal_agents
         }, {
             agent: agent.egocentric_info(self)
-            for agent in self.agents
+            for agent in origonal_agents
         }
 
     def close(self):

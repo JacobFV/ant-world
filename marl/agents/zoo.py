@@ -29,15 +29,12 @@ class Zoo:
         """
         pass
 
-    #def caterpillar(self):
-    #    """caterpillar agent initializer
-    #
-    #    return: returns caterpillar
-    #    """
-    #    pass
-    #
     #def butterfly(self):
-    #    """butterfly agent initializer
+    #    """butterfly agent initializer.
+    #    starts off as caterpillar so this
+    #    agent tests the rl_agent's adapt-
+    #    ability to exploit metamorphisis
+    #    (which requires a lot of energy)
     #
     #    return: returns butterfly
     #    """
