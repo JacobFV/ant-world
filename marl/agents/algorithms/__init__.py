@@ -15,6 +15,9 @@ class Base_RL_Algorithm:
     def restore(self, path): pass
 
 class Base_Actor_Critic_Algorithm(Base_RL_Algorithm):
+    def __init__(**kwargs):
+        super(Base_Actor_Critic_Algorithm, self).__init__(**kwargs)
+
     def q_fn(self, obs, a): pass
 
     def value(self, obs):
