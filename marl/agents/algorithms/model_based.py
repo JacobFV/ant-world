@@ -1,4 +1,4 @@
-from . import Base_Actor_Critic_Algorithm
+from .base import Base_Actor_Critic_Algorithm
 import tensorflow as tf
 import sonnet as snt
 
@@ -66,14 +66,15 @@ class Model_Based_Algorithm(Base_Actor_Critic_Algorithm):
         return action[0] #this is the only output in the batch
     
     def pred(self, obs, a):
-        obs = tf.expand_dims(obs, 0) #create a batch of size 1
-        a = tf.expand_dims(a, 0) #create a batch of size 1
-        pred = self.predictor(tf.concat([obs, a], axis=-1))
+        obs_a_pair = tf.concat([obs, a], -1)
+        obs_a_pair = tf.expand_dims(obs_a_pair, 0)
+        pred = self.predictor(obs_a_pair)
         return pred[0] #this is the only output in the batch
 
     def estimate_reward(self, obs, a):
-        return self.reward_estimator(
-            tf.concat([obs, a], axis=-1))
+        obs_a_pair = tf.concat([obs, a], -1)
+        obs_a_pair = tf.expand_dims(obs_a_pair, 0)
+        return self.reward_estimator(obs_a_pair)
 
     def _imag_rollout(self, obs, a, T=10):
         """generates rollout for T steps
@@ -115,7 +116,11 @@ class Model_Based_Algorithm(Base_Actor_Critic_Algorithm):
             identify the frame. If a frame is specified
             instead of None, the loss is returned. If
             `just_one_frame=None`, optimization happens
-            inside this method and nothing is returned"""
+            inside this method and nothing is returned
+            
+        return: returns nothing if just_one_frame is None,
+            otherwise, returns {"pred_loss": pred_loss,
+            "pol_loss": pol_loss} for that frame"""
 
         c_recon = 0.2 #reconstructive accuracy importance
         c_pred_roll = 1.0 #predictive rollout accuracy importance
