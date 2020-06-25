@@ -1,5 +1,10 @@
 class Base_RL_Algorithm:
     def __init__(self, observation_space, action_space):
+        """
+        args:
+            observation_space: gym.spaces.Space
+            action_space: gym.spaces.Space
+        """
         self.observation_space = observation_space
         self.action_space = action_space
         
