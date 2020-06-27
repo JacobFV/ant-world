@@ -1,8 +1,3 @@
-#bugs can belong to differing colonies, have different prey, and 
-from . import Agent
-
-from env import Social_MA_Env, Signalling_Object, Moving_Object
-
 import numpy as np
 import tensorflow as tf
 

@@ -1,3 +1,5 @@
+import numpy as np
+import tensorflow as tf
 import gym
 
 class MA_Gym_Env(gym.Env):
@@ -27,6 +29,7 @@ class MA_Gym_Env(gym.Env):
         be disregaurded but is still passed along in
         case it serves any purpose later"""
         pass
+
     def step(self, a_n):
         """simulate one step
         args:
@@ -56,6 +59,7 @@ class MA_Gym_Env(gym.Env):
     def close(self):
         """free any resources not automatically destroyed"""
         pass
+
     def render(self, mode="human"):
         """renders entire environment"""
         pass
@@ -83,27 +87,6 @@ class MA_Gym_Env(gym.Env):
         """agents that die midgame call this method"""
         self.agents.remove(agent)
 
-from ..envs.base import MA_Gym_Env
-import numpy as np
-
-class Moving_Object:
-    def __init__(self, loc: list, ops: np.int8):
-        self.loc = loc
-        self.ops = ops
-    
-    def try_move(self, delta_loc, env):
-        raise NotImplementedError() #TODO
-
-class Signalling_Object:
-    def __init__(self, signal_depth=3):
-        self.signal = np.zeros((signal_depth,))
-    
-    @property
-    def signal(self):
-        return self.signal
-
-    def _set_signal(self, signal):
-        self.signal = signal
 
 class Social_MA_Env(MA_Gym_Env):
 
@@ -118,7 +101,7 @@ class Social_MA_Env(MA_Gym_Env):
         if static_objects is None:
             static_objects = np.zeros(world_size, dtype=np.int8)
 
-        super(Grid_World, self).__init__(**kwargs)
+        super(Social_MA_Env, self).__init__(**kwargs)
 
         for agent in self.agents:
             assert isinstance(agent, Moving_Object)
