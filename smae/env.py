@@ -88,7 +88,7 @@ class MA_Gym_Env(gym.Env):
         self.agents.remove(agent)
 
 
-class Social_MA_Env(MA_Gym_Env):
+class SMAE(MA_Gym_Env):
 
     metadata = {'render.modes': ["rgb"]}
     
@@ -101,7 +101,7 @@ class Social_MA_Env(MA_Gym_Env):
         if static_objects is None:
             static_objects = np.zeros(world_size, dtype=np.int8)
 
-        super(Social_MA_Env, self).__init__(**kwargs)
+        super(SMAE, self).__init__(**kwargs)
 
         for agent in self.agents:
             assert isinstance(agent, Moving_Object)
@@ -129,12 +129,12 @@ class Social_MA_Env(MA_Gym_Env):
     def add_agent(self, agent):
         """new agents created midgame are
         added by their parents"""
-        super(Grid_World, self).add_agent(agent)
+        super(SMAE, self).add_agent(agent)
         self.moving_objects.append(agent)
 
     def remove_agent(self, agent):
         """agents that die midgame call this method"""
-        super(Grid_World, self).remove_agent(agent)
+        super(SMAE, self).remove_agent(agent)
         self.moving_objects.remove(agent)
 
     def _global_update(self, a_n):
