@@ -1,6 +1,7 @@
 #bugs can belong to differing colonies, have different prey, and 
 from . import Agent
-from ..envs.grid_world import Grid_World, Moving_Object, Signalling_Object
+
+from env import Social_MA_Env, Signalling_Object, Moving_Object
 
 import numpy as np
 import tensorflow as tf
@@ -13,7 +14,7 @@ PLACE_INDEX = 4
 SIGNAL_INDEX_START = 5 # NOTE: do not change these signal
 SIGNAL_INDEX_END = 7 # indecies without refactoring below
 
-class Grid_World_Agent(Agent, Moving_Object, Signalling_Object):
+class Agent(Agent, Moving_Object, Signalling_Object):
 
 
     def __init__(self,
