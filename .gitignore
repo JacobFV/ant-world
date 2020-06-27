@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 #vs code
-/.vscode
+.vscode/
