@@ -198,10 +198,9 @@ class SMAE(MA_Gym_Env):
                 return actor
         return None
 
-    def render(self, mode="rgb", z_heights=0):
-        """renders entire environment as bitmap
-        stacking z layers on top of white background
-        
+    def default_coloring(self, x, y, z):
+        """default coloring scheme for smae env render
+
         Colors pixels by first match:
         ACTOR: blue, intensity detirmined by signal
         SIGNALING but not ACTOR: green, intensity detirmined by signal
@@ -215,12 +214,65 @@ class SMAE(MA_Gym_Env):
         DEFAULT (rigid object): black
 
         args:
+            x,y,z: point in self's space to detirmine color for
+
+        return: returns tuple (r,g,b) as np.int8 values 0-255 
+        """
+        # for brevity in the if cases, static_obj is idenitified here
+        static_obj = self.static_objects[x,y,z]
+        static_obj_ops = OPERATIONS.decode(static_obj)
+
+        moving_obj = self.moving_object_at((x,y,z))
+        # big conditional statement per voxel
+        if isinstance(moving_obj, Actor):
+            # blue, intensity detirmined by signal
+            signal = moving_obj.signal() / VOCAB_SIZE
+            pass
+        elif self.signaling_object_at((x,y,z)):
+            # green, intensity detirmined by signal
+            signal = moving_obj.signal() / VOCAB_SIZE
+            pass
+        elif self.moving_object_at((x,y,z)):
+            # brown
+            pass
+        # Now the object is presumed to be static
+        elif OPERATIONS.EAT in static_obj_ops:
+            # yellow
+            pass
+        elif OPERATIONS.PICKUP in static_obj_ops \
+            and OPERATIONS.PUSH_OVER in static_obj_ops:
+            # red-orange
+            pass
+        elif OPERATIONS.PUSH_OVER in static_obj_ops:
+            # orange
+            pass
+        elif OPERATIONS.PICKUP in static_obj_ops:
+            # red
+            pass
+        elif OPERATIONS.GOTHROUGH in static_obj_ops:
+            # transparent
+            # since it is transparent, do nothing
+            pass
+        else:
+            # black
+            pass
+
+    def render(self, mode="rgb", z_heights=0, coloring=None):
+        """renders entire environment as bitmap
+        stacking z layers on top of white background
+        
+        args:
             mode: "rgb" or "human". See env.metadata['render.modes']
             z_heights: int or list of ints of z heights to render
+            coloring: color mapping function
+                (x,y,z)->(r,g,b) as np.int8 values 0-255
+                if `None`, self.default_coloring is used
 
         return: returns numpy array (mode="rgb") or 
             Image (mode="human") of render
         """
+        if coloring is None:
+            coloring = self.default_coloring
         if not isinstance(z_heights, list):
             z_heights=[z_heights]
 
@@ -230,35 +282,9 @@ class SMAE(MA_Gym_Env):
         # overlay renders from bottom up
         for z in z_heights:
             # this loop can be parallelized
-            for x, y in np.ndindex(self.world_size):
-                # for brevity in the if cases, static_obj is idenitified here
-                static_obj = self.static_objects[x,y,z]
-                static_obj_ops = OPERATIONS.decode(static_obj)
-                # big conditional statement
-                if self.actor_at((x,y,z)):
-                    pass
-                elif self.signaling_object_at((x,y,z)):
-                    pass
-                elif self.moving_object_at((x,y,z)):
-                    pass
-                # Now the object is presumed to be static
-                elif OPERATIONS.EAT in static_obj_ops:
-                    pass
-                elif OPERATIONS.PICKUP in static_obj_ops \
-                    and OPERATIONS.PUSH_OVER in static_obj_ops:
-                    pass
-                elif OPERATIONS.PUSH_OVER in static_obj_ops:
-                    pass
-                elif OPERATIONS.PICKUP in static_obj_ops:
-                    
-                    pass
-                elif OPERATIONS.GOTHROUGH in static_obj_ops:
-                    # transparent
-                    pass
-                else:
-                    # black
-                    pass
-                
+            np_img = [coloring(x,y,z) #TODO. this does not handle overlay
+                for x, y
+                in np.ndindex(self.world_size[0:1])]
 
         return {
             "rgb": np_img,
