@@ -6,19 +6,31 @@ class OPERATIONS(Enum, object):
     PICKUP = 1 # exclusive of GOTHROUGH
     PUSH_OVER = 2 # exclusive of GOTHROUGH
     EAT = 3 # exclusive of GOTHROUGH
-    # That's all.
-    # As long as np.int8 is used to encode operations
-    # only four distinct operations will be implimented
+    # four more operations could be supported with np.int8
 
     @staticmethod
     def encode(ops: list) -> np.ndarray:
+        """convert a list of OPERATION enums into a numpy array
+
+        args:
+            ops: list of OPERATIONS to encode
+
+        return: returns multihot numpy array encoding
+        """
         return np.array([
-            1 if OPERATIONS(i) in operations else 0
+            1 if OPERATIONS(i) in ops else 0
             for i in range(8)
         ])
 
     @staticmethod
     def decode(ops_arr: np.ndarray) -> list:
+        """decode a numpy array to a list of OPERATION enums
+
+        args:
+            ops_arr: multihot numpy array encoding
+
+        return: returns list of OPERATIONS
+        """
         return [
             OPERATIONS(i) for i, bit
             in enumerate(ops_arr)

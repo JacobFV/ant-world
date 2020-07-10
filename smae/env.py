@@ -182,41 +182,88 @@ class SMAE(MA_Gym_Env):
                 return moving_object
         return None
 
-    def render(self, mode="rgb", z=0):
-        """renders entire environment as bitmap at z
+    def signaling_object_at(self, loc):
+        """returns the signaling object (if present)
+        at loc. returns `None` if just static objects"""
+        for signaling_object in self.signaling_objects:
+            if signaling_object.loc == loc:
+                return signaling_object
+        return None
+
+    def actor_at(self, loc):
+        """returns the actor (if present)
+        at loc. returns `None` if just static objects"""
+        for actor in self.actors:
+            if actor.loc == loc:
+                return actor
+        return None
+
+    def render(self, mode="rgb", z_heights=0):
+        """renders entire environment as bitmap
+        stacking z layers on top of white background
         
         Colors pixels by first match:
-        GOTHROUGH: white
         ACTOR: blue, intensity detirmined by signal
-        SIGNAL: green, intensity detirmined by signal
-        MOVING: brown
-        EAT: yellow
-        PICK_UP and PUSH_OVER: red-orange
-        PICK_UP: red
-        PUSH_OVER: orange
+        SIGNALING but not ACTOR: green, intensity detirmined by signal
+        MOVING but not SIGNALING: brown
+        STATIC
+         - EATable: yellow
+         - PICK_UP and PUSH_OVER: red-orange
+         - PUSH_OVER: orange
+         - PICK_UP: red
+         - GOTHROUGHABLE: transparent (in case multiple z layers are stacked)
+        DEFAULT (rigid object): black
+
+        args:
+            mode: "rgb" or "human". See env.metadata['render.modes']
+            z_heights: int or list of ints of z heights to render
+
+        return: returns numpy array (mode="rgb") or 
+            Image (mode="human") of render
         """
-        # all renders base off the ariel view numpy array
-        # TODO TODO we've got work TODO
+        if not isinstance(z_heights, list):
+            z_heights=[z_heights]
 
+        # start with white background
+        np_img = np.ones(self.world_size[0:1]+(3,), np.float)
 
-        # actually make a first match
-        # ACTOR : color based on signal
-        # MOVING : black
-        # OPER.A : red
-        # OPER.B : orange
-        # OPER.C : yellow
-        # OPER.D : 
-
-        # objects you can go
-        np_img = self.combined_object_ops
-
-        # moving objects in blue
+        # overlay renders from bottom up
+        for z in z_heights:
+            # this loop can be parallelized
+            for x, y in np.ndindex(self.world_size):
+                # for brevity in the if cases, static_obj is idenitified here
+                static_obj = self.static_objects[x,y,z]
+                static_obj_ops = OPERATIONS.decode(static_obj)
+                # big conditional statement
+                if self.actor_at((x,y,z)):
+                    pass
+                elif self.signaling_object_at((x,y,z)):
+                    pass
+                elif self.moving_object_at((x,y,z)):
+                    pass
+                # Now the object is presumed to be static
+                elif OPERATIONS.EAT in static_obj_ops:
+                    pass
+                elif OPERATIONS.PICKUP in static_obj_ops \
+                    and OPERATIONS.PUSH_OVER in static_obj_ops:
+                    pass
+                elif OPERATIONS.PUSH_OVER in static_obj_ops:
+                    pass
+                elif OPERATIONS.PICKUP in static_obj_ops:
+                    
+                    pass
+                elif OPERATIONS.GOTHROUGH in static_obj_ops:
+                    # transparent
+                    pass
+                else:
+                    # black
+                    pass
+                
 
         return {
             "rgb": np_img,
             "human": Image.fromarray(np_img, 'RGB'))
         }[mode]
-        pass
 
     def add_actor(self, actor):
         """new actors created post-initialization
