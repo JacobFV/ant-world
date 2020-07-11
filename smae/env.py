@@ -3,12 +3,12 @@ import tensorflow as tf
 import gym
 from PIL import Image
 
-from actor import Actor, VOCAB_SIZE
-from elements import OPERATIONS, Moving_Object, Signalling_Moving_Object
+from .actor import Actor, VOCAB_SIZE
+from .elements import OPERATIONS, Moving_Object, Signaling_Moving_Object
 
 class MA_Gym_Env(gym.Env):
 
-    def __init__(self, actor_ids=None):
+    def __init__(self, actor_ids=[]):
         """
         args:
             actor_ids: list of user supplied keys to
@@ -295,9 +295,11 @@ class SMAE(MA_Gym_Env):
             # this loop can be parallelized
             pixel_rgba = [coloring(x,y,z) for x, y
                 in np.ndindex(self.world_size[0:1])]
-            layers.append(np.array(pixel_rgba,
-                shape=self.world_size[0:1]+(4,),
-                dtype=np.int8))))
+            layers.append(
+                np.array(
+                    pixel_rgba,
+                    shape=self.world_size[0:1]+(4,),
+                    dtype=np.int8))
         
         # blend layers into np_img
         np_img = layers[0]
@@ -306,7 +308,7 @@ class SMAE(MA_Gym_Env):
 
         return {
             "rgb": np_img,
-            "human": Image.fromarray(np_img, 'RGB'))
+            "human": Image.fromarray(np_img[:,:,0:2], 'RGB')
         }[mode]
 
     def add_actor(self, actor):
@@ -356,8 +358,8 @@ class SMAE(MA_Gym_Env):
         loc = np.random.randint(0, self.world_size)
         return loc \
             if OPERATIONS.GOTHROUGH in OPERATIONS.decode(
-                self.combined_object_ops[loc])
-            else random_avaliable_loc()
+                self.combined_object_ops[loc]) \
+            else self.random_avaliable_loc()
 
     def _global_update(self):
         """All moving objects have moved

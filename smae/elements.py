@@ -1,7 +1,7 @@
 import numpy as np
 from enum import Enum
 
-class OPERATIONS(Enum, object):
+class OPERATIONS(Enum):
     GOTHROUGH = 0 # exclusive of PUSH_OVER or PICKUP
     PICKUP = 1 # exclusive of GOTHROUGH
     PUSH_OVER = 2 # exclusive of GOTHROUGH
@@ -9,33 +9,39 @@ class OPERATIONS(Enum, object):
     # four more operations could be supported with np.int8
 
     @staticmethod
-    def encode(ops: list) -> np.ndarray:
-        """convert a list of OPERATION enums into a numpy array
+    def encode(ops: list) -> np.int8:
+        """convert a list of OPERATION enums into an int8
 
         args:
             ops: list of OPERATIONS to encode
 
-        return: returns multihot numpy array encoding
+        return: returns int8 encoding
         """
-        return np.array([
-            1 if OPERATIONS(i) in ops else 0
+        return sum([
+            2 ** i
             for i in range(8)
+            if OPERATIONS(i) in ops
         ])
 
     @staticmethod
-    def decode(ops_arr: np.ndarray) -> list:
-        """decode a numpy array to a list of OPERATION enums
+    def decode(ops_int: np.int8) -> list:
+        """decode an int8 to a list of OPERATION enums
 
         args:
-            ops_arr: multihot numpy array encoding
+            ops_int: int8 encoding
 
         return: returns list of OPERATIONS
         """
         return [
-            OPERATIONS(i) for i, bit
-            in enumerate(ops_arr)
-            if bit == 1
+            OPERATIONS(i)
+            for i
+            in range(8)
+            if (2**i) & ops_int
         ]
+
+    @staticmethod
+    def contains(ops_int, op):
+        return bool((2**i) & ops_int)
 
 class Moving_Object:
     def __init__(self,

@@ -3,7 +3,7 @@ from .env import SMAE
 # register social multiagent environment in gym
 import gym
 gym.envs.register(
-    id='smae',
+    id='smae-v0',
     entry_point='smae.env:smae',
     max_episode_steps=-1,
     kwargs = {
