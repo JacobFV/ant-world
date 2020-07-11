@@ -1,6 +1,7 @@
 import numpy as np
 from enum import Enum
 
+IMPLIMENTED_OPS = 4
 class OPERATIONS(Enum):
     GOTHROUGH = 0 # exclusive of PUSH_OVER or PICKUP
     PICKUP = 1 # exclusive of GOTHROUGH
@@ -19,7 +20,7 @@ class OPERATIONS(Enum):
         """
         return sum([
             2 ** i
-            for i in range(8)
+            for i in range(IMPLIMENTED_OPS)
             if OPERATIONS(i) in ops
         ])
 
@@ -35,7 +36,7 @@ class OPERATIONS(Enum):
         return [
             OPERATIONS(i)
             for i
-            in range(8)
+            in range(IMPLIMENTED_OPS)
             if (2**i) & ops_int
         ]
 
@@ -90,7 +91,7 @@ class Moving_Object:
                 # of that block
                 next_space = env.combined_object_ops \
                     [block_loc+unit_delta]
-                if OPERATIONS.GOTHROUGH in OPERATIONS.decode(next_space)
+                if OPERATIONS.GOTHROUGH in OPERATIONS.decode(next_space):
                     # if that block is actually a 
                     # `moving_object` have it move itself
                     moved_itself = False
