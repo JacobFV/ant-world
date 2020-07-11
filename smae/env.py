@@ -54,7 +54,7 @@ class MA_Gym_Env(gym.Env):
         self.origonal_actors = self.actors.copy()
         for actor_id, a in a_n.items():
             self.origonal_actors[actor_id].apply_action(a, self)
-        self._global_update()
+        self._global_update(a_n)
         return {
             actor_id: actor.egocentric_obs(self)
             for actor_id, actor in self.origonal_actors.items()
@@ -186,7 +186,7 @@ class SMAE(MA_Gym_Env):
         """returns the signaling object (if present)
         at loc. returns `None` if just static objects"""
         obj = self.moving_object_at(loc)
-        return obj if isinstance(obj, Signalling_Moving_Object) else None
+        return obj if isinstance(obj, Signaling_Moving_Object) else None
 
     def actor_at(self, loc):
         """returns the actor (if present)
@@ -285,7 +285,7 @@ class SMAE(MA_Gym_Env):
                 # (r',g',b',a') := a * (r,g,b,a)
                 return back[:,:,:] * (255 - fore[:,:,3]) \
                      + fore[:,:,:] * fore[:,:,3]
-            blender = overlay
+            blender = simple_overlay
 
         # start with white background
         layers = [np.zeros(self.world_size[0:1]+(4,), np.int8)]

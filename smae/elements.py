@@ -39,9 +39,9 @@ class OPERATIONS(Enum):
             if (2**i) & ops_int
         ]
 
-    @staticmethod
-    def contains(ops_int, op):
-        return bool((2**i) & ops_int)
+    #@staticmethod
+    #def allows(ops_int, op):
+    #    return bool((2**i) & ops_int)
 
 class Moving_Object:
     def __init__(self,
@@ -90,7 +90,7 @@ class Moving_Object:
                 # of that block
                 next_space = env.combined_object_ops \
                     [block_loc+unit_delta]
-                if OPERATIONS.GOTHROUGH in OPERATIONS.decode(next_space):
+                if OPERATIONS.GOTHROUGH in OPERATIONS.decode(next_space)
                     # if that block is actually a 
                     # `moving_object` have it move itself
                     moved_itself = False
