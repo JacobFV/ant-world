@@ -223,35 +223,34 @@ class SMAE(MA_Gym_Env):
         if isinstance(moving_obj, Actor):
             # blue, intensity detirmined by signal
             signal = moving_obj.signal() / VOCAB_SIZE
-            pass
+            return [0, 0, int(255*signal), 255]
         elif self.signaling_object_at((x,y,z)):
             # green, intensity detirmined by signal
             signal = moving_obj.signal() / VOCAB_SIZE
-            pass
+            return [0, int(255*signal), 0, 255]
         elif self.moving_object_at((x,y,z)):
             # brown
-            pass
+            return [128, 32, 16, 255]
         # Now the object is presumed to be static
         elif OPERATIONS.EAT in static_obj_ops:
             # yellow
-            pass
+            return [255, 255, 0, 255]
         elif OPERATIONS.PICKUP in static_obj_ops \
             and OPERATIONS.PUSH_OVER in static_obj_ops:
             # red-orange
-            pass
+            return [255, 64, 0, 255]
         elif OPERATIONS.PUSH_OVER in static_obj_ops:
             # orange
-            pass
+            return [255, 128, 0, 255]
         elif OPERATIONS.PICKUP in static_obj_ops:
             # red
-            pass
+            return [255, 0, 0, 255]
         elif OPERATIONS.GOTHROUGH in static_obj_ops:
             # transparent
-            # since it is transparent, do nothing
-            pass
+            return [0, 0, 0, 0]
         else:
             # black
-            pass
+            return [0, 0, 0, 255]
 
     def render(self, mode="rgb", z_heights=0, coloring=None, blending=None):
         """renders entire environment as bitmap
