@@ -263,12 +263,14 @@ class Actor(Signaling_Moving_Object):
         # speed is porportional to health [0, 1)
         delta_loc *= self.health
 
+        # amount of mass moved
+        mass = 1 + len(self.storage)
+
         # exerting work costs energy
         displacement = np.linalg.norm(delta_loc, ord=2)
         self.energy -= MOVING_ENERGY_COST * displacement * mass
 
         # below is reminiscent of a=F/m
-        mass = 1 + len(self.storage)
         delta_loc /= mass
 
         super(Actor, self).try_move(delta_loc, env)
