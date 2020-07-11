@@ -185,18 +185,14 @@ class SMAE(MA_Gym_Env):
     def signaling_object_at(self, loc):
         """returns the signaling object (if present)
         at loc. returns `None` if just static objects"""
-        for signaling_object in self.signaling_objects:
-            if signaling_object.loc == loc:
-                return signaling_object
-        return None
+        obj = self.moving_object_at(loc)
+        return obj if isinstance(obj, Signalling_Moving_Object) else None
 
     def actor_at(self, loc):
         """returns the actor (if present)
         at loc. returns `None` if just static objects"""
-        for actor in self.actors:
-            if actor.loc == loc:
-                return actor
-        return None
+        obj = self.moving_object_at(loc)
+        return obj if isinstance(obj, Actor) else None
 
     def default_coloring(self, x, y, z):
         """default coloring scheme for smae env render
@@ -216,7 +212,7 @@ class SMAE(MA_Gym_Env):
         args:
             x,y,z: point in self's space to detirmine color for
 
-        return: returns tuple (r,g,b) as np.int8 values 0-255 
+        return: returns tuple (r,g,b,a) as np.int8 values 0-255 
         """
         # for brevity in the if cases, static_obj is idenitified here
         static_obj = self.static_objects[x,y,z]
@@ -257,7 +253,7 @@ class SMAE(MA_Gym_Env):
             # black
             pass
 
-    def render(self, mode="rgb", z_heights=0, coloring=None):
+    def render(self, mode="rgb", z_heights=0, coloring=None, blending=None):
         """renders entire environment as bitmap
         stacking z layers on top of white background
         
@@ -265,26 +261,49 @@ class SMAE(MA_Gym_Env):
             mode: "rgb" or "human". See env.metadata['render.modes']
             z_heights: int or list of ints of z heights to render
             coloring: color mapping function
-                (x,y,z)->(r,g,b) as np.int8 values 0-255
+                (x,y,z)->(r,g,b,a) as np.int8 values 0-255
                 if `None`, self.default_coloring is used
+            blending: blending mode (default simple_overlay:
+                full overlay if alpha > 0). (back, fore) -> img
+                for combining multiple numpy images of format
+                (height, width, depth) with depth a 4-discreet
+                (r,g,b,a) tuple
 
         return: returns numpy array (mode="rgb") or 
             Image (mode="human") of render
         """
-        if coloring is None:
-            coloring = self.default_coloring
         if not isinstance(z_heights, list):
             z_heights=[z_heights]
+        if coloring is None:
+            coloring = self.default_coloring
+        if blending is None:
+            def simple_overlay(back, fore):
+                """override back with any nonzero fore alpha
+                return: returns 3D numpy array (H,W,D) with
+                depth still (r,g,b,a) but alpha is only zero
+                if both back and fore have zero alpha"""
+                # this broadcasts alpha onto all four channels
+                # (r',g',b',a') := a * (r,g,b,a)
+                return back[:,:,:] * (255 - fore[:,:,3]) \
+                     + fore[:,:,:] * fore[:,:,3]
+            blender = overlay
 
         # start with white background
-        np_img = np.ones(self.world_size[0:1]+(3,), np.float)
+        layers = [np.zeros(self.world_size[0:1]+(4,), np.int8)]
 
         # overlay renders from bottom up
         for z in z_heights:
             # this loop can be parallelized
-            np_img = [coloring(x,y,z) #TODO. this does not handle overlay
-                for x, y
+            pixel_rgba = [coloring(x,y,z) for x, y
                 in np.ndindex(self.world_size[0:1])]
+            layers.append(np.array(pixel_rgba,
+                shape=self.world_size[0:1]+(4,),
+                dtype=np.int8))))
+        
+        # blend layers into np_img
+        np_img = layers[0]
+        for layer in layers[1:]:
+            np_img = blending(np_img, layer)
 
         return {
             "rgb": np_img,
