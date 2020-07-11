@@ -11,3 +11,4 @@ Use this environment to explore
 ## TODO's
 - [ ] make a convenience function for `OPERATIONS.X in OPERATIONS.decode(Y)` which utilizes speedy bitwise operations instead of conversion and comparison 
 - [ ] right now OPERATIONs are a list of ones and zeros but they can be a single int8
+- [ ] use sparse array or <(x,y,z), obj> dict for speedy moving_object, signaling_object, and actor location based lookup
