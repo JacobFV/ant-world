@@ -5,7 +5,7 @@ with open("README.md", 'r') as f:
 
 setup(
     name='smae',
-    version='0.0.2',
+    version='0.0.3',
     license="MIT",
     url="https://github.com/JacobFV/smae",
     description='Social Multi-Agent Environment',
@@ -18,7 +18,7 @@ setup(
         'numpy==1.19.0',
         'tensorflow==2.2.0',
         'gym==0.17.2',
-        'PIL==7.1.2'
+        'pillow==7.1.2'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
